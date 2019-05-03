@@ -6,10 +6,17 @@ import 'antd/dist/antd.css';
 
 class Info extends Component {
     render() {
-        const dataSource = [];
-        const columns = [];
+        const columns = [{
+            title: '参数',
+            dataIndex: 'key',
+            key: 'key',
+        }, {
+            title: '值',
+            dataIndex: 'value',
+            key: 'value',
+        }];
         return (
-            <Table dataSource={dataSource} columns={columns}/>
+            <Table dataSource={this.props.dataSource} columns={columns}/>
         )
     }
 }
@@ -19,60 +26,91 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading: true,
+            loading: false,
             support: true,
             connected: false,
-            bluetooth: navigator.bluetooth,
+            info: [],
         };
     }
 
-    componentDidMount() {
-        if (!this.state.bluetooth) {
-            console.log('WebBluetooth is not supported by your browser!');
-            this.setState({support: false});
-        }
-    }
-
-    connect = () => {
-        console.log('start connect');
-        try {
-            console.log('Requesting Bluetooth Device...');
-            const device = this.state.bluetooth.requestDevice({
-                filters: [
-                    {services: [MiBand.advertisementService]}
-                ],
-                optionalServices: MiBand.optionalServices
-            });
-
-            device.addEventListener('gattserverdisconnected', () => {
-                console.log('Device disconnected');
-            });
-
-            device.gatt.disconnect();
-
-            console.log('Connecting to the device...');
-            const server = device.gatt.connect();
-            console.log('Connected');
-
-            const miband = new MiBand(server);
-
-            miband.init();
-
-            test_all(miband, console.log);
-
-        } catch (error) {
-            console.log('Argh!', error);
-        }
-    }
-
     render() {
+        const _this = this;
+        const bluetooth = navigator.bluetooth;
+        let miband;
+
+        async function connect() {
+            console.log('start connect');
+            if (!bluetooth) {
+                console.log('WebBluetooth is not supported by your browser!');
+                return;
+            }
+
+            try {
+                console.log('Requesting Bluetooth Device...');
+                const device = await bluetooth.requestDevice({
+                    filters: [
+                        {services: [MiBand.advertisementService]}
+                    ],
+                    optionalServices: MiBand.optionalServices
+                });
+
+                device.addEventListener('gattserverdisconnected', () => {
+                    console.log('Device disconnected');
+                });
+                await device.gatt.disconnect();
+                console.log('Connecting to the device...');
+
+                const server = await device.gatt.connect();
+                console.log('Connected');
+
+                miband = new MiBand(server);
+                await miband.init();
+
+                _this.setState({connected: true});
+
+                await miband.showNotification('message');
+
+            } catch (error) {
+                console.log('Argh!', error);
+            }
+        }
+
+        async function test() {
+            await test_all(miband, console.log)
+        }
+
+        async function get_info() {
+            console.log('start get info');
+            let info = [
+                {key: 'time', value: await miband.getTime()},
+
+            ];
+            console.log(info);
+            _this.setState({info: info});
+        }
+
+        async function notice_phone() {
+            await miband.showNotification('phone');
+        }
+
         if (this.state.support) {
             return (
                 <div>
                     <h1>YES</h1>
-                    <button onClick={this.connect}>
+                    <h2>{this.state.connected ? 'CONNECTED' : 'CONNECTING'}</h2>
+                    <button onClick={connect}>
                         scan
                     </button>
+                    <button onClick={test}>
+                        test
+                    </button>
+                    <button disabled onClick={get_info}>
+                        info
+                    </button>
+                    <button disabled onClick={notice_phone}>
+                        phone
+                    </button>
+                    {this.state.connected ? <Info dataSource={this.state.info}/> : null}
                 </div>
             )
         } else {
