@@ -46,3 +46,13 @@ h2 {
     color: white;
     text-align: center;
 }
+
+.hrm-rate{
+    width: 100%;
+    text-align: center;
+    font-size: 50px;
+}
+
+.hrm-unit{
+    font-size: 30px;
+}

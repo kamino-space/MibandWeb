@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import MiBand from 'miband';
-import {Table, Collapse, Button} from 'antd';
+import {Table, Collapse, Button, Switch} from 'antd';
 import $ from 'jquery';
 import 'antd/dist/antd.css';
 import './App.css';
@@ -58,6 +58,9 @@ class App extends Component {
             connecting: false,
             info: [],
             miband: false,
+            hrm: false,
+            rate: 0,
+            shake: false,
         };
     }
 
@@ -85,6 +88,7 @@ class App extends Component {
 
                 device.addEventListener('gattserverdisconnected', () => {
                     log('Device disconnected');
+                    _this.setState({connecting: false, connected: false});
                 });
                 await device.gatt.disconnect();
                 log('Connecting to the device...');
@@ -113,21 +117,26 @@ class App extends Component {
 
                 _this.setState({
                     info: [
-                        {key: '硬件版本', value: info.hw_ver},
-                        {key: '软件版本', value: info.sw_ver},
-                        {key: '电量', value: info.battery.level + '%'},
                         {key: '时间', value: info.time.toLocaleString()},
+                        {key: '电量', value: info.battery.level + '%'},
                         {key: '步数', value: ped.steps},
                         {key: '里程', value: ped.distance + 'm'},
                         {key: '消耗', value: ped.calories + 'cal'},
+                        {key: '硬件', value: info.hw_ver},
+                        {key: '软件', value: info.sw_ver},
                     ]
                 });
 
                 _this.setState({miband: miband});
 
+                miband.on('heart_rate', (rate) => {
+                    _this.setState({rate: rate});
+                    log('Heart Rate:', rate)
+                });
+
                 delay(0);
             } catch (error) {
-                log('Argh!', error);
+                log('ERROR: ', error);
             }
 
             _this.setState({connecting: false})
@@ -197,9 +206,41 @@ class App extends Component {
             await _this.state.miband.showNotification('message');
         }
 
+        async function notice_vibrate() {
+            log('ACTION: vibrate notice');
+            await _this.state.miband.showNotification('vibrate');
+        }
+
         async function notice_close() {
             log('ACTION: close notice');
+            _this.setState({shake: false});
             await _this.state.miband.showNotification('off');
+        }
+
+        async function notice_unlimited() {
+            log('ACTION: unlimited notice');
+            _this.setState({shake: true}, async function () {
+                while (_this.state.shake) {
+                    await _this.state.miband.showNotification('vibrate');
+                    await delay(1000);
+                    //await _this.state.miband.showNotification('off');
+                }
+            });
+        }
+
+        async function hrm_start() {
+            log('ACTION: start heart rate monitor');
+            await _this.state.miband.hrmStart();
+        }
+
+        async function hrm_stop() {
+            log('ACTION: stop heart rate monitor');
+            await _this.state.miband.hrmStop();
+        }
+
+        async function hrm_switch() {
+            _this.setState({hrm: !_this.state.hrm});
+            _this.state.hrm ? hrm_stop() : hrm_start();
         }
 
         if (this.state.support) {
@@ -233,13 +274,22 @@ class App extends Component {
                                 </div>
                             </Panel>
                             <Panel header="ACTION" key="2">
-                                <Button block onClick={test_all}>全部测试</Button><br/>
                                 <Button block onClick={notice_phone}>电话通知</Button><br/>
                                 <Button block onClick={notice_message}>短信通知</Button><br/>
-                                <Button block onClick={notice_close}>关闭通知</Button><br/>
+                                <Button block onClick={notice_vibrate}>振动通知</Button><br/>
+                                <Button block onClick={notice_unlimited}>无限振动</Button><br/>
+                                <Button block onClick={notice_close} type="primary">关闭通知</Button><br/>
+                                <Button block onClick={test_all} disabled>全部测试</Button><br/>
                             </Panel>
-                            <Panel header="TEST" key="3">
-                                <p>test</p>
+                            <Panel header="HRM" key="3">
+                                <p>
+                                    <span>心率检测开关&nbsp;&nbsp;</span>
+                                    <Switch onChange={hrm_switch}/>
+                                </p>
+                                <p className="hrm-rate">
+                                    <span>{this.state.rate}</span>
+                                    <span className="hrm-unit">BPM</span>
+                                </p>
                             </Panel>
                         </Collapse>
                     </div>

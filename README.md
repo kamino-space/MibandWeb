@@ -3,7 +3,10 @@ control your Miband2 on website
 forked from [miband-js](https://github.com/vshymanskyy/miband-js/tree/gh-pages)  
 
 ## DEMO
-empty
+loading
+
+## TODO
+- Run on Android Chrome
 
 ## RUN
 ```
