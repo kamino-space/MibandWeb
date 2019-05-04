@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import MiBand from 'miband';
-import test_all from './test';
 import {Table, Collapse, Button} from 'antd';
 import $ from 'jquery';
 import 'antd/dist/antd.css';
@@ -65,13 +64,13 @@ class App extends Component {
     render() {
         const _this = this;
         const bluetooth = navigator.bluetooth;
+        if (!bluetooth) {
+            this.setState({support: false});
+            log('WebBluetooth is not supported by your browser!');
+        }
 
         async function connect() {
             log('Start connect');
-            if (!bluetooth) {
-                log('WebBluetooth is not supported by your browser!');
-                return;
-            }
 
             _this.setState({connecting: true});
 
@@ -134,9 +133,58 @@ class App extends Component {
             _this.setState({connecting: false})
         }
 
-        async function test() {
+        async function test_all() {
             log('ACTION: test all');
-            await test_all(_this.state.miband, log)
+            let miband = _this.state.miband;
+
+            let info = {
+                time: await miband.getTime(),
+                battery: await miband.getBatteryInfo(),
+                hw_ver: await miband.getHwRevision(),
+                sw_ver: await miband.getSwRevision(),
+                serial: await miband.getSerial(),
+            };
+
+            log(`HW ver: ${info.hw_ver}  SW ver: ${info.sw_ver}`);
+            info.serial && log(`Serial: ${info.serial}`);
+            log(`Battery: ${info.battery.level}%`);
+            log(`Time: ${info.time.toLocaleString()}`);
+
+            let ped = await miband.getPedometerStats();
+            log('Pedometer:', JSON.stringify(ped));
+
+            log('Notifications demo...');
+            await miband.showNotification('message');
+            await delay(3000);
+            await miband.showNotification('phone');
+            await delay(5000);
+            await miband.showNotification('off');
+
+            log('Tap MiBand button, quick!');
+            miband.on('button', () => log('Tap detected'));
+            try {
+                await miband.waitButton(10000)
+            } catch (e) {
+                log('OK, nevermind ;)')
+            }
+
+            log('Heart Rate Monitor (single-shot)');
+            log('Result:', await miband.hrmRead());
+
+            log('Heart Rate Monitor (continuous for 30 sec)...');
+            miband.on('heart_rate', (rate) => {
+                log('Heart Rate:', rate)
+            });
+            await miband.hrmStart();
+            await delay(30000);
+            await miband.hrmStop();
+
+            //log('RAW data (no decoding)...')
+            //miband.rawStart();
+            //await delay(30000);
+            //miband.rawStop();
+
+            log('Finished.')
         }
 
         async function notice_phone() {
@@ -185,7 +233,7 @@ class App extends Component {
                                 </div>
                             </Panel>
                             <Panel header="ACTION" key="2">
-                                <Button block onClick={test}>全部测试</Button><br/>
+                                <Button block onClick={test_all}>全部测试</Button><br/>
                                 <Button block onClick={notice_phone}>电话通知</Button><br/>
                                 <Button block onClick={notice_message}>短信通知</Button><br/>
                                 <Button block onClick={notice_close}>关闭通知</Button><br/>

@@ -55,3 +55,4 @@ async function test_all(miband, log) {
 }
 
 module.exports = test_all;
+
