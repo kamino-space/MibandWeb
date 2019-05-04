@@ -3,7 +3,7 @@ control your Miband2 on website
 forked from [miband-js](https://github.com/vshymanskyy/miband-js/tree/gh-pages)  
 
 ## DEMO
-loading
+https://mw.isdut.cn
 
 ## TODO
 - Run on Android Chrome
