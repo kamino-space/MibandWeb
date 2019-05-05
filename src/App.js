@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import MiBand from 'miband';
-import {Table, Collapse, Button, Switch} from 'antd';
+import {Table, Collapse, Button, Switch, Slider, InputNumber, Row, Col,} from 'antd';
 import $ from 'jquery';
 import 'antd/dist/antd.css';
 import './App.css';
@@ -53,24 +53,30 @@ class App extends Component {
         super(props);
         this.state = {
             loading: false,
-            support: true,
+            support: false,
             connected: false,
             connecting: false,
             info: [],
             miband: false,
+            bluetooth: false,
             hrm: false,
             rate: 0,
             shake: false,
+            defer: 0,
         };
+    }
+
+    componentDidMount() {
+        const bluetooth = navigator.bluetooth;
+        if (!bluetooth) {
+            log('WebBluetooth is not supported by your browser!');
+            return;
+        }
+        this.setState({bluetooth: bluetooth, support: true});
     }
 
     render() {
         const _this = this;
-        const bluetooth = navigator.bluetooth;
-        if (!bluetooth) {
-            this.setState({support: false});
-            log('WebBluetooth is not supported by your browser!');
-        }
 
         async function connect() {
             log('Start connect');
@@ -79,7 +85,7 @@ class App extends Component {
 
             try {
                 log('Requesting Bluetooth Device...');
-                const device = await bluetooth.requestDevice({
+                const device = await _this.state.bluetooth.requestDevice({
                     filters: [
                         {services: [MiBand.advertisementService]}
                     ],
@@ -197,16 +203,19 @@ class App extends Component {
         }
 
         async function notice_phone() {
+            await notice_close();
             log('ACTION: phone notice');
             await _this.state.miband.showNotification('phone');
         }
 
         async function notice_message() {
+            await notice_close();
             log('ACTION: message notice');
             await _this.state.miband.showNotification('message');
         }
 
         async function notice_vibrate() {
+            await notice_close();
             log('ACTION: vibrate notice');
             await _this.state.miband.showNotification('vibrate');
         }
@@ -218,12 +227,12 @@ class App extends Component {
         }
 
         async function notice_unlimited() {
+            await notice_close();
             log('ACTION: unlimited notice');
             _this.setState({shake: true}, async function () {
                 while (_this.state.shake) {
                     await _this.state.miband.showNotification('vibrate');
-                    await delay(1000);
-                    //await _this.state.miband.showNotification('off');
+                    await delay(500);
                 }
             });
         }
@@ -241,6 +250,22 @@ class App extends Component {
         async function hrm_switch() {
             _this.setState({hrm: !_this.state.hrm});
             _this.state.hrm ? hrm_stop() : hrm_start();
+        }
+
+        async function shake_mode() {
+            await notice_close();
+            log('ACTION: start shake mode');
+            _this.setState({shake: true}, async function f() {
+                while (_this.state.shake) {
+                    await _this.state.miband.showNotification('vibrate');
+                    await delay(_this.state.defer * 1000 + 500);
+                }
+            });
+        }
+
+        function change_defer(value) {
+            log('ACTION: set defer ', value);
+            _this.setState({defer: value});
         }
 
         if (this.state.support) {
@@ -276,8 +301,8 @@ class App extends Component {
                             <Panel header="ACTION" key="2">
                                 <Button block onClick={notice_phone}>电话通知</Button><br/>
                                 <Button block onClick={notice_message}>短信通知</Button><br/>
-                                <Button block onClick={notice_vibrate}>振动通知</Button><br/>
-                                <Button block onClick={notice_unlimited}>无限振动</Button><br/>
+                                <Button block onClick={notice_vibrate}>震动通知</Button><br/>
+                                <Button block onClick={notice_unlimited}>无限震动</Button><br/>
                                 <Button block onClick={notice_close} type="primary">关闭通知</Button><br/>
                                 <Button block onClick={test_all} disabled>全部测试</Button><br/>
                             </Panel>
@@ -290,6 +315,30 @@ class App extends Component {
                                     <span>{this.state.rate}</span>
                                     <span className="hrm-unit">BPM</span>
                                 </p>
+                            </Panel>
+                            <Panel header="SHAKE" key="5">
+                                <h4>选择震动间隔</h4>
+                                <Button block onClick={shake_mode}>开始</Button>
+                                <Button block onClick={notice_close}>关闭</Button>
+                                <Row>
+                                    <Col span={12}>
+                                        <Slider
+                                            min={0}
+                                            max={60}
+                                            onChange={change_defer}
+                                            value={typeof this.state.defer === 'number' ? this.state.defer : 0}
+                                        />
+                                    </Col>
+                                    <Col span={4}>
+                                        <InputNumber
+                                            min={0}
+                                            max={60}
+                                            style={{marginLeft: 16}}
+                                            value={this.state.defer}
+                                            onChange={change_defer}
+                                        />
+                                    </Col>
+                                </Row>
                             </Panel>
                         </Collapse>
                     </div>
