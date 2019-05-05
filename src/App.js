@@ -94,6 +94,7 @@ class App extends Component {
 
                 device.addEventListener('gattserverdisconnected', () => {
                     log('Device disconnected');
+                    notice_close();
                     _this.setState({connecting: false, connected: false});
                 });
                 await device.gatt.disconnect();
@@ -232,7 +233,7 @@ class App extends Component {
             _this.setState({shake: true}, async function () {
                 while (_this.state.shake) {
                     await _this.state.miband.showNotification('vibrate');
-                    await delay(500);
+                    await delay(1000);
                 }
             });
         }
