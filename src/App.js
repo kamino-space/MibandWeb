@@ -41,8 +41,12 @@ class Info extends Component {
             key: 'value',
         }];
         return (
-            <Table dataSource={this.props.dataSource} loading={this.props.isLoading} columns={columns}
-                   pagination={false}/>
+            <Table
+                dataSource={this.props.dataSource}
+                loading={this.props.isLoading}
+                columns={columns}
+                pagination={false}
+            />
         )
     }
 }
