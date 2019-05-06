@@ -5,6 +5,13 @@ forked from [miband-js](https://github.com/vshymanskyy/miband-js/tree/gh-pages)
 ## DEMO
 https://mw.imea.me
 
+## NOTICE
+- Tested devices
+    - Miband2
+- Tested browsers
+    - Chrome(Win)
+    - Chrome(Android)
+    
 ## RUN
 ```
 npm install yarn -g
