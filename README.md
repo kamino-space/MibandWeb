@@ -1,6 +1,6 @@
 # MibandWeb
 control your Miband2 on website  
-forked from [miband-js](https://github.com/vshymanskyy/miband-js/tree/gh-pages)  
+forked from [miband-js](https://github.com/vshymanskyy/miband-js)  
 
 ## DEMO
 https://mw.imea.me
