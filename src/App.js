@@ -1,11 +1,13 @@
 import React, {Component} from 'react';
 import MiBand from 'miband';
-import {Table, Collapse, Button, Switch, Slider, InputNumber, Row, Col,} from 'antd';
+import {Table, Collapse, Button, Switch, Slider, InputNumber, Row, Col, Typography} from 'antd';
 import $ from 'jquery';
 import 'antd/dist/antd.css';
 import './App.css';
+import chrome_logo from './images/chrome-logo.svg';
 
 const Panel = Collapse.Panel;
+const {Title, Paragraph} = Typography;
 
 function log() {
     const msg = [...arguments].join(' ');
@@ -21,9 +23,25 @@ class NotSupport extends Component {
     render() {
         return (
             <div>
-                <h1>Your Browser Don't Support WebBluetooth</h1>
-                <h2>You can get information at
-                    https://github.com/WebBluetoothCG/web-bluetooth/blob/master/implementation-status.md</h2>
+                <h1>MibandWeb</h1>
+                <h2 style={{backgroundColor: 'red'}}>你的浏览器不支持WebBluetooth</h2>
+                <div style={{textAlign: 'center'}}>
+                    <img src={chrome_logo} width="50%" alt=""/>
+                    <p style={{fontSize: '20px'}}>请使用Chrome浏览器或关闭此页面</p>
+                </div>
+                <p>下载方法</p>
+                <Collapse>
+                    <Panel header="Android" key="1">
+                        <p>应用商店搜索Chrome，找到真正的Chrome下载并安装</p>
+                    </Panel>
+                    <Panel header="Windows" key="2">
+                        <p>在官网下载<a href="https://www.google.cn/chrome">https://www.google.cn/chrome</a></p>
+                        <p>打不开官网就使用这个<a href="https://www.lanzous.com/i42tzje">https://www.lanzous.com/i42tzje</a></p>
+                    </Panel>
+                    <Panel header="Other" key="3">
+                        不知道呢。。
+                    </Panel>
+                </Collapse>
             </div>
         )
     }
@@ -310,6 +328,7 @@ class App extends Component {
                                 <Button block onClick={notice_unlimited}>无限震动</Button><br/>
                                 <Button block onClick={notice_close} type="primary">关闭通知</Button><br/>
                                 <Button block onClick={test_all} disabled>全部测试</Button><br/>
+                                <Button block onClick={() => alert('boom')} type="danger">爆炸程序</Button>
                             </Panel>
                             <Panel header="HRM" key="3">
                                 <p>
@@ -323,8 +342,6 @@ class App extends Component {
                             </Panel>
                             <Panel header="SHAKE" key="5">
                                 <h4>选择震动间隔</h4>
-                                <Button block onClick={shake_mode}>开始</Button>
-                                <Button block onClick={notice_close}>关闭</Button>
                                 <Row>
                                     <Col span={12}>
                                         <Slider
@@ -344,6 +361,24 @@ class App extends Component {
                                         />
                                     </Col>
                                 </Row>
+                                <Button block onClick={shake_mode}>开始</Button>
+                                <Button block onClick={notice_close}>关闭</Button>
+                            </Panel>
+                            <Panel header="ABOUT" key="6">
+                                <Typography>
+                                    <Title level={3}>VERSION</Title>
+                                    <Paragraph>
+                                        v0.1.1(build in 2019/05/08)
+                                    </Paragraph>
+                                    <Title level={3}>LINKS</Title>
+                                    <Paragraph>
+                                        <ul>
+                                            <li><a href="https://github.com/kamino-space/MibandWeb">Github</a></li>
+                                            <li><a href="https://imea.me">Author</a></li>
+                                        </ul>
+                                    </Paragraph>
+
+                                </Typography>
                             </Panel>
                         </Collapse>
                     </div>

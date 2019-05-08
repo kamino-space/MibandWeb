@@ -5,6 +5,15 @@ forked from [miband-js](https://github.com/vshymanskyy/miband-js)
 ## DEMO
 https://mw.imea.me
 
+## FUNCTION
+- sport data
+- device info
+- message notice
+- phone notice
+- vibrate notice
+- shake mode
+- heart rate monitor
+
 ## NOTICE
 - Tested devices
     - Miband2
