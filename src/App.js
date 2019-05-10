@@ -42,6 +42,9 @@ class NotSupport extends Component {
                         不知道呢。。
                     </Panel>
                 </Collapse>
+                <p>这是干啥的</p>
+                <p>网页上控制你的小米手环2，让它震动，震动，震动。。</p>
+                <p><a href="https://github.com/kamino-space/MibandWeb">Github</a></p>
             </div>
         )
     }
