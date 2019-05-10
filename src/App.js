@@ -289,6 +289,15 @@ class App extends Component {
             });
         }
 
+        function boom() {
+            try {
+                log('start boom');
+                navigator.vibrate(10000);
+            } catch (e) {
+                log('ERROR', e);
+            }
+        }
+
         function change_defer(value) {
             log('ACTION: set defer ', value);
             _this.setState({defer: value});
@@ -331,7 +340,7 @@ class App extends Component {
                                 <Button block onClick={notice_unlimited}>无限震动</Button><br/>
                                 <Button block onClick={notice_close} type="primary">关闭通知</Button><br/>
                                 <Button block onClick={test_all} disabled>全部测试</Button><br/>
-                                <Button block onClick={() => alert('boom')} type="danger">爆炸程序</Button>
+                                <Button block onClick={boom} type="danger">爆炸程序</Button>
                             </Panel>
                             <Panel header="HRM" key="3">
                                 <p>
