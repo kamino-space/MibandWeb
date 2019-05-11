@@ -92,6 +92,10 @@ class App extends Component {
     }
 
     componentDidMount() {
+        if (window.location.protocol === "http:") {
+            window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+            return;
+        }
         const bluetooth = navigator.bluetooth;
         if (!bluetooth) {
             log('WebBluetooth is not supported by your browser!');
